@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>HyperFrames Video Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 60px auto;
+      padding: 0 20px;
+    }
+    textarea {
+      width: 100%;
+      height: 90px;
+      font-size: 16px;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 12px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #status { margin-top: 14px; color: #555; }
+    video { width: 100%; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h2>Motion Graphics Generator</h2>
+  <p>Describe the video you want. Example: "announce our new AI feature launch"</p>
+
+  <textarea id="prompt" placeholder="Type your prompt..."></textarea>
+  <br />
+  <button onclick="generateVideo()">Generate video</button>
+
+  <div id="status"></div>
+  <video id="result" controls style="display:none;"></video>
+
+  <script>
+    async function generateVideo() {
+      const prompt = document.getElementById("prompt").value.trim();
+      const statusEl = document.getElementById("status");
+      const videoEl = document.getElementById("result");
+
+      if (!prompt) {
+        statusEl.textContent = "Please enter a prompt first.";
+        return;
+      }
+
+      statusEl.textContent = "Generating... this can take a little while.";
+      videoEl.style.display = "none";
+
+      try {
+        const response = await fetch("/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt }),
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          statusEl.textContent = "Error: " + err.error;
+          return;
+        }
+
+        const videoBlob = await response.blob();
+        videoEl.src = URL.createObjectURL(videoBlob);
+        videoEl.style.display = "block";
+        statusEl.textContent = "Done.";
+      } catch (e) {
+        statusEl.textContent = "Something went wrong: " + e.message;
+      }
+    }
+  </script>
+</body>
+</html>

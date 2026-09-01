@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>{{ title }}</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html, body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        font-family: "Inter", sans-serif;
+      }
+
+      /* Base background is a soft radial gradient, not a flat color,
+         so the frame has some depth even before anything animates. */
+      #bg {
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 30% 25%, {{ accent_color }}22, transparent 55%),
+          radial-gradient(circle at 75% 80%, {{ accent_color }}18, transparent 50%),
+          {{ background_color }};
+      }
+
+      /* Two soft blurred circles that drift slowly - cheap way to make
+         the frame feel alive instead of static, without real 3D/particles. */
+      .glow {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.35;
+        background: {{ accent_color }};
+      }
+      #glow-a { width: 500px; height: 500px; top: -100px; left: -100px; }
+      #glow-b { width: 600px; height: 600px; bottom: -150px; right: -150px; }
+
+      #text-block {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-align: center;
+        padding: 0 160px;
+      }
+
+      h1 {
+        font-size: 100px;
+        font-weight: 700;
+        letter-spacing: -1px;
+        margin: 0;
+        text-shadow: 0 4px 30px rgba(0,0,0,0.35);
+      }
+
+      /* Small accent bar under the title - animated in width via GSAP,
+         a lightweight "designed" touch instead of text just sitting there. */
+      #accent-bar {
+        width: 0;
+        height: 6px;
+        background: {{ accent_color }};
+        border-radius: 3px;
+        margin: 28px 0;
+      }
+
+      p {
+        font-size: 40px;
+        font-weight: 400;
+        opacity: 0.85;
+        margin: 0;
+        max-width: 1200px;
+      }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=block" rel="stylesheet">
+  </head>
+  <body>
+    <div
+      data-hf-id="hf-root"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="{{ duration_seconds }}"
+      data-width="1920"
+      data-height="1080"
+    >
+      <div id="bg">
+        <div class="glow" id="glow-a"></div>
+        <div class="glow" id="glow-b"></div>
+      </div>
+
+      <div id="text-block">
+        <h1 id="title-text">{{ title }}</h1>
+        <div id="accent-bar"></div>
+        <p id="subtitle-text">{{ subtitle }}</p>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      window.__timelines["main"] = tl;
+
+      // Background glows drift in and gently float for the whole duration -
+      // this is what makes the frame feel like a designed video, not a slide.
+      tl.from("#glow-a", { x: -80, y: -60, opacity: 0, duration: 1.2, ease: "power1.out" }, 0);
+      tl.from("#glow-b", { x: 80, y: 60, opacity: 0, duration: 1.2, ease: "power1.out" }, 0);
+      tl.to("#glow-a", { x: 40, y: 20, duration: {{ duration_seconds }}, ease: "sine.inOut" }, 0.2);
+      tl.to("#glow-b", { x: -40, y: -20, duration: {{ duration_seconds }}, ease: "sine.inOut" }, 0.2);
+
+      // Title, accent bar, and subtitle reveal in sequence rather than all
+      // at once - style ({{ style }}) controls how the title itself enters.
+      {% if style == 'slide' %}
+      tl.from("#title-text", { x: -250, opacity: 0, duration: 0.9, ease: "power2.out" }, 0.2);
+      {% elif style == 'zoom' %}
+      tl.from("#title-text", { scale: 0.5, opacity: 0, duration: 0.9, ease: "back.out(1.7)" }, 0.2);
+      {% else %}
+      tl.from("#title-text", { y: 30, opacity: 0, duration: 0.9, ease: "power1.out" }, 0.2);
+      {% endif %}
+
+      tl.to("#accent-bar", { width: 160, duration: 0.6, ease: "power2.out" }, 0.9);
+      tl.from("#subtitle-text", { y: 20, opacity: 0, duration: 0.7, ease: "power1.out" }, 1.1);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,5 @@
+cd D:\hyperframes-app
+echo .env > .gitignore
+echo output/ >> .gitignore
+echo __pycache__/ >> .gitignore
+echo node_modules/ >> .gitignore
